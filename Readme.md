@@ -81,33 +81,33 @@ Format the 1gb partition with the command `mkfs.ext4 /dev/nvme0n1p7`. Be sure th
 **Step 4**
 Encrypt the disk by executing `cryptsetup luksFormat /dev/nvme0n1p8` Be sure that nvme0n1p8 is actually the Arch partition (the 487gb one). The default settings from cryptsetup are [good enough](https://wiki.archlinux.org/index.php/Dm-crypt/Device_encryption#Encryption_options_for_LUKS_mode)
 
-After the encryption, we need to decrypt the disk with the following command `cryptsetup luksOpen /dev/nvme0n1p8 Arch`. The "Arch" can be anything you wish, it is the name you will use to reference the volume after it is decrypted.
+After the encryption, we need to decrypt the disk with the following command `cryptsetup luksOpen /dev/nvme0n1p8 arch`. The "arch" can be anything you wish, it is the name you will use to reference the volume after it is decrypted.
 
 **Step 5**
 Format the encrypted partition in the correct format. I am creating a swap space of 32gb because I want to be able to hibernate if needed. If you don't want that you can create a small swap space. Execute the following commands:
 
-* `pvcreate /dev/mapper/Arch`
-* `vgcreate Arch /dev/mapper/Arch`
-* `lvcreate -L +32G Arch -n swap`
-* `lvcreate -l +100%FREE Arch -n root`
+* `pvcreate /dev/mapper/arch`
+* `vgcreate arch /dev/mapper/arch`
+* `lvcreate -L +38G arch -n swap`
+* `lvcreate -l +100%FREE arch -n root`
 
 Now we need to create filesystems on the encrypted partitions:
 
-* `mkswap /dev/mapper/Arch-swap`
-* `mkfs.ext4 /dev/mapper/Arch-root`
+* `mkswap /dev/mapper/arch-swap`
+* `mkfs.ext4 /dev/mapper/arch-root`
 
 **Step 6**
 Mount all the partitions:
 
-* `mount /dev/mapper/Arch-root /mnt` -> Mount root
-* `swapon /dev/mapper/Arch-swap` -> Enable swap
+* `mount /dev/mapper/arch-root /mnt` -> Mount root
+* `swapon /dev/mapper/arch-swap` -> Enable swap
 * `mkdir /mnt/boot` -> Create boot dir
 * `mount /dev/nvme0n1p7 /mnt/boot` -> Make sure nvme0n1p7 is Arch /boot of 1gb
 * `mkdir /mnt/boot/efi` -> Create efi dir
 * `mount /dev/nvme0n1p1 /mnt/boot/efi` -> Make sure nvme0n1p1 is EFI partition
 
 **Step 7**
-Before installing Arch you can specify which mirrors you want to use but I leave that for later. To install Arch execute the following command `pacstrap /mnt base base-devel refind-efi dialog wpa_supplicant`.
+Before installing Arch you can specify which mirrors you want to use but I leave that for later. To install Arch execute the following command `pacstrap /mnt base base-devel vim refind-efi wifi-menu dhcpcd dialog wpa_supplicant`.
 
 You need "dialog wpa_supplicant" to be able to access wifi again with wifi-menu when you are done with the installation.
 
@@ -142,7 +142,7 @@ menuentry "Arch Linux" {
     volume  USE_THE_PARTUUID_OF_THE_BOOT_PARTITION
     loader  /vmlinuz-linux
     initrd  /initramfs-linux.img
-    options "rw cryptdevice=/dev/nvme0n1p8:Arch root=/dev/mapper/Arch-root resume=/dev/mapper/Arch-swap"
+    options "rw cryptdevice=/dev/nvme0n1p8:arch root=/dev/mapper/arch-root resume=/dev/mapper/arch-swap"
     submenuentry "Boot using fallback initramfs" {
         initrd  /initramfs-linux-fallback.img
     }
